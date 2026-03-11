@@ -46,6 +46,11 @@ from olfactory import OlfactorySystem, OdorSource
 from vocalization import WingSongSystem
 from flight import FlightSystem, FlightState
 
+try:
+    from consciousness import ConsciousnessDetector
+except ImportError:
+    ConsciousnessDetector = None
+
 
 # ============================================================================
 # Auto-demo sequence: cycles through stimuli so the fly is always active
@@ -139,6 +144,9 @@ def main():
     parser.add_argument('--flight', action='store_true',
                         help='Enable virtual flight via external forces '
                              '(GF triggers takeoff, xfrc_applied on Thorax)')
+    parser.add_argument('--consciousness', action='store_true',
+                        help='Enable consciousness proxy measurement '
+                             '(Phi/IIT, GWT, Self-Model, Perturbation)')
     args = parser.parse_args()
 
     # -- State --
@@ -257,6 +265,14 @@ def main():
         print("Initializing wing song system (courtship/alarm via DN)...")
         wing_song = WingSongSystem(self_hearing_gain=0.2)
         print(f"  Pulse=200Hz, Sine=160Hz, Alarm=400Hz (self-hearing=20%)")
+
+    # ── Initialize consciousness detection (if --consciousness) ──
+    consciousness = None
+    if args.consciousness and brain is not None:
+        if ConsciousnessDetector is not None:
+            consciousness = ConsciousnessDetector(brain)
+        else:
+            print("[WARN] consciousness.py not found, --consciousness ignored")
 
     # ── Initialize flight system placeholder (if --flight) ──
     flight_sys = None
@@ -714,6 +730,8 @@ def main():
                 dn_spikes = brain.get_dn_spikes()
                 pop_spikes = brain.get_population_spikes() if brain.populations else None
                 decoder.update(dn_spikes, pop_spikes)
+                if consciousness is not None:
+                    consciousness.update(body_step, bridge.mode)
 
             # ── Per-eye T2 fallback for directional escape ──
             if visual is not None and cached_visual[0] is not None:
@@ -897,6 +915,9 @@ def main():
                     ws_str = wing_song.get_status_str()
                     if ws_str:
                         status_line += f"  | {ws_str}"
+                # Add consciousness monitoring
+                if consciousness is not None:
+                    status_line += f"  | {consciousness.get_status_str()}"
                 print(status_line)
 
             # ── Send data to brain monitor ──
@@ -986,12 +1007,16 @@ def main():
                         arena_kwargs.get('arena'), 'ball_pos', None)
                     if ball_pos is not None:
                         mon_data['ball_x'] = float(ball_pos[0])
+                if consciousness is not None:
+                    mon_data.update(consciousness.get_monitor_data())
                 monitor.send(mon_data)
 
     except KeyboardInterrupt:
         print("\nStopped by user.")
 
     finally:
+        if consciousness is not None:
+            consciousness.save_session()
         if monitor is not None:
             monitor.stop()
         if viewer is not None:

@@ -42,6 +42,16 @@ COL_TITLE = (180, 230, 255)
 COL_HEX = (15, 20, 50)
 COL_BRAIN_CENTER = (18, 22, 50)
 
+# Consciousness index gradient: black → blue → green → white
+CI_GRADIENT = [
+    (0.0,  (5, 5, 20)),       # black/dark
+    (0.25, (20, 60, 200)),    # blue
+    (0.5,  (0, 200, 100)),    # green
+    (0.75, (100, 255, 200)),  # bright green-white
+    (1.0,  (240, 255, 255)),  # white
+]
+COL_CI_PEAK = (255, 215, 0)   # gold for peak markers
+
 # ---------------------------------------------------------------------------
 # Brain regions: (name, x, y, radius, color_rgb, group)
 # ---------------------------------------------------------------------------
@@ -707,6 +717,171 @@ class BrainRenderer:
             else:
                 self.display_intensity[i] = base
 
+    # ── Consciousness Index Visualization ────────────────────────────────
+
+    @staticmethod
+    def _ci_color(ci):
+        """Interpolate CI gradient for a value in [0, 1]."""
+        ci = max(0.0, min(1.0, ci))
+        for i in range(len(CI_GRADIENT) - 1):
+            t0, c0 = CI_GRADIENT[i]
+            t1, c1 = CI_GRADIENT[i + 1]
+            if ci <= t1:
+                f = (ci - t0) / (t1 - t0) if t1 > t0 else 0.0
+                return (
+                    int(c0[0] + (c1[0] - c0[0]) * f),
+                    int(c0[1] + (c1[1] - c0[1]) * f),
+                    int(c0[2] + (c1[2] - c0[2]) * f),
+                )
+        return CI_GRADIENT[-1][1]
+
+    def _draw_consciousness(self):
+        """Draw CI timeline graph and value bar at top of screen (y=38)."""
+        d = self.data
+        pg = self.pg
+        ci = d.get('consciousness_ci', 0.0)
+        timeline = d.get('consciousness_timeline', [])
+
+        if ci == 0.0 and not timeline:
+            return  # no consciousness data yet
+
+        y_base = 38
+        graph_w = 420
+        graph_h = 30
+        bar_x = 440
+        bar_w = 340
+        bar_h = 16
+
+        # ── Timeline graph (left side) ──
+        if len(timeline) > 1:
+            # Background
+            pg.draw.rect(self.screen, (8, 10, 25),
+                         (10, y_base, graph_w, graph_h))
+            pg.draw.rect(self.screen, (30, 40, 70),
+                         (10, y_base, graph_w, graph_h), 1)
+
+            # Plot CI timeline
+            n = len(timeline)
+            step = max(1, graph_w / max(n - 1, 1))
+            points = []
+            for i, v in enumerate(timeline):
+                x = 10 + int(i * step)
+                y = y_base + graph_h - int(v * graph_h * 0.9) - 2
+                y = max(y_base + 1, min(y_base + graph_h - 1, y))
+                points.append((x, y))
+
+            if len(points) >= 2:
+                # Draw filled area
+                fill_points = list(points) + [
+                    (points[-1][0], y_base + graph_h - 1),
+                    (points[0][0], y_base + graph_h - 1)]
+                # Draw line on top
+                for i in range(len(points) - 1):
+                    color = self._ci_color(timeline[min(i, len(timeline) - 1)])
+                    pg.draw.line(self.screen, color,
+                                 points[i], points[i + 1], 2)
+
+            # Peak markers (gold stars)
+            peaks = d.get('consciousness_peaks', [])
+            for step_val, peak_ci in peaks:
+                # Find approximate x position
+                for i, e in enumerate(timeline):
+                    if abs(e - peak_ci) < 0.01:
+                        x = 10 + int(i * (graph_w / max(len(timeline) - 1, 1)))
+                        y = y_base + graph_h - int(peak_ci * graph_h * 0.9) - 2
+                        y = max(y_base + 2, y)
+                        pg.draw.circle(self.screen, COL_CI_PEAK, (x, y), 3)
+                        break
+
+            # Label
+            lbl = self.font_sm.render('CI TIMELINE', True, (80, 100, 140))
+            self.screen.blit(lbl, (12, y_base + 1))
+
+        # ── CI value bar (right side) ──
+        ci_color = self._ci_color(ci)
+
+        # Label
+        ci_txt = self.font.render(f'CONSCIOUSNESS: {ci:.3f}', True, ci_color)
+        self.screen.blit(ci_txt, (bar_x, y_base))
+
+        # Bar background
+        bar_y = y_base + 18
+        pg.draw.rect(self.screen, (8, 10, 25),
+                     (bar_x, bar_y, bar_w, bar_h))
+        pg.draw.rect(self.screen, (30, 40, 70),
+                     (bar_x, bar_y, bar_w, bar_h), 1)
+
+        # Bar fill with gradient
+        fill_w = int(bar_w * min(ci, 1.0))
+        if fill_w > 0:
+            for x in range(fill_w):
+                t = x / bar_w
+                c = self._ci_color(t)
+                pg.draw.line(self.screen, c,
+                             (bar_x + x, bar_y + 1),
+                             (bar_x + x, bar_y + bar_h - 2), 1)
+
+    def _draw_consciousness_sidebar(self):
+        """Draw PHI/GWT/SLF/CMP bars below existing sidebar."""
+        d = self.data
+        pg = self.pg
+        ci = d.get('consciousness_ci', 0.0)
+
+        if ci == 0.0 and d.get('consciousness_phi', 0.0) == 0.0:
+            return  # no data yet
+
+        x_start = 710
+        bar_w = 70
+        bar_h = 12
+
+        # Position below existing sidebar (14 bars × 20px + header)
+        y = 50 + len(SIDEBAR_BARS) * (bar_h + 8) + 20
+
+        # Header
+        header = self.font_sm.render('CONSCIOUSNESS', True, COL_HUD)
+        self.screen.blit(header, (x_start, y - 14))
+        y += 4
+
+        metrics = [
+            ('PHI', d.get('consciousness_phi', 0.0)),
+            ('GWT', d.get('consciousness_gw', 0.0)),
+            ('SLF', d.get('consciousness_self', 0.0)),
+            ('CMP', d.get('consciousness_cmplx', 0.0)),
+        ]
+
+        for label, val in metrics:
+            val = max(0.0, min(1.0, val))
+            color = self._ci_color(val)
+
+            # Label
+            lbl_color = color if val > 0.05 else (60, 65, 90)
+            lbl = self.font_sm.render(label, True, lbl_color)
+            self.screen.blit(lbl, (x_start, y))
+
+            # Bar background
+            bx = x_start + 32
+            pg.draw.rect(self.screen, (12, 14, 28),
+                         (bx, y, bar_w, bar_h))
+            pg.draw.rect(self.screen, (30, 35, 60),
+                         (bx, y, bar_w, bar_h), 1)
+
+            # Bar fill
+            fill_w = int(bar_w * val)
+            if fill_w > 0:
+                for x in range(fill_w):
+                    t = x / bar_w
+                    c = self._ci_color(t)
+                    pg.draw.line(self.screen, c,
+                                 (bx + x, y + 1),
+                                 (bx + x, y + bar_h - 2), 1)
+
+            # Value text
+            val_color = color if val > 0.1 else (55, 60, 85)
+            val_txt = self.font_sm.render(f'{val:.2f}', True, val_color)
+            self.screen.blit(val_txt, (bx + bar_w + 4, y))
+
+            y += bar_h + 8
+
     # ── Render Frame ──────────────────────────────────────────────────────
 
     def render_frame(self):
@@ -751,7 +926,11 @@ class BrainRenderer:
         self._draw_hud()
         self._draw_sidebar()
 
-        # 10. Flip
+        # 10. Consciousness overlay (if data present)
+        self._draw_consciousness()
+        self._draw_consciousness_sidebar()
+
+        # 11. Flip
         self.pg.display.flip()
 
     def _get_conn_intensities(self):
