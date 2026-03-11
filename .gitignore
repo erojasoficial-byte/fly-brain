@@ -1,0 +1,28 @@
+__pycache__/
+*.egg-info
+*.pyc
+
+# Brian2/Brian2CUDA generated standalone code
+code/output*
+
+# Simulation results (large parquet files)
+data/results/
+
+# PyTorch cached weight matrices (generated from connectivity data)
+data/weight_coo.pkl
+data/weight_csr.pkl
+
+# Legacy archive data (too large, available from FlyWire)
+data/archive/
+
+# Backups
+backup_*.zip
+
+# Generated PDFs (rebuild with: python md_to_pdf.py)
+*.pdf
+
+# OS / IDE
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

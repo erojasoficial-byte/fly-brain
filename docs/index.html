@@ -1,0 +1,752 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Embodied Drosophila — Whole-Brain Connectome Simulation in a Biomechanical Body</title>
+    <meta name="description" content="138,639 spiking neurons from the FlyWire connectome driving a biomechanical fruit fly body with vision, olfaction, gustation, flight, and escape behaviors. Open-source GPU-accelerated simulation.">
+    <meta name="keywords" content="Drosophila, fruit fly, brain simulation, connectome, spiking neural network, NeuroMechFly, MuJoCo, embodied neuroscience, computational neuroscience, FlyWire, whole-brain model, virtual flight, escape behavior, Giant Fiber, GPU simulation, PyTorch, LIF neurons">
+    <meta name="author" content="E. Rojas — EON Systems PBC">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://eonsystemspbc.github.io/fly-brain/">
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="Embodied Drosophila — 138K-Neuron Brain in a Virtual Body">
+    <meta property="og:description" content="The first whole-brain connectome-driven embodied fruit fly simulation. 138,639 LIF neurons on GPU connected to a biomechanical body with compound-eye vision, olfaction, gustation, flight, and emergent behaviors.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://eonsystemspbc.github.io/fly-brain/">
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Embodied Drosophila — 138K-Neuron Brain Simulation">
+    <meta name="twitter:description" content="Whole-brain connectome simulation in a physics-based biomechanical body. Open source.">
+
+    <!-- JSON-LD Structured Data -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "SoftwareApplication",
+        "name": "Embodied Drosophila",
+        "description": "138,639 spiking neuron whole-brain simulation of Drosophila melanogaster connected to a biomechanical body (NeuroMechFly v2) with compound-eye vision, olfaction, gustation, somatosensation, courtship song, and virtual flight.",
+        "applicationCategory": "Scientific Software",
+        "operatingSystem": "Windows, Linux",
+        "url": "https://github.com/eonsystemspbc/fly-brain",
+        "author": {
+            "@type": "Organization",
+            "name": "EON Systems PBC"
+        },
+        "license": "https://opensource.org/licenses/MIT",
+        "programmingLanguage": ["Python", "CUDA"],
+        "keywords": "Drosophila, connectome, spiking neural network, embodied neuroscience, computational neuroscience, NeuroMechFly, MuJoCo"
+    }
+    </script>
+
+    <style>
+        :root {
+            --bg: #0a0e17;
+            --bg2: #111827;
+            --bg3: #1a2332;
+            --text: #e2e8f0;
+            --text2: #94a3b8;
+            --accent: #38bdf8;
+            --accent2: #818cf8;
+            --green: #4ade80;
+            --orange: #fb923c;
+            --pink: #f472b6;
+            --border: #1e293b;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.7;
+            overflow-x: hidden;
+        }
+
+        /* Hero */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 2rem;
+            background: radial-gradient(ellipse at 50% 0%, rgba(56, 189, 248, 0.08) 0%, transparent 60%),
+                        radial-gradient(ellipse at 80% 50%, rgba(129, 140, 248, 0.06) 0%, transparent 50%),
+                        var(--bg);
+            position: relative;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-image: radial-gradient(rgba(56, 189, 248, 0.07) 1px, transparent 1px);
+            background-size: 40px 40px;
+            pointer-events: none;
+        }
+
+        .hero-badge {
+            display: inline-block;
+            padding: 0.4rem 1.2rem;
+            border: 1px solid var(--accent);
+            border-radius: 50px;
+            color: var(--accent);
+            font-size: 0.85rem;
+            letter-spacing: 0.05em;
+            margin-bottom: 1.5rem;
+            background: rgba(56, 189, 248, 0.05);
+        }
+
+        h1 {
+            font-size: clamp(2.2rem, 5vw, 4rem);
+            font-weight: 800;
+            line-height: 1.1;
+            margin-bottom: 1.5rem;
+            background: linear-gradient(135deg, #38bdf8, #818cf8, #f472b6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero p {
+            font-size: 1.2rem;
+            color: var(--text2);
+            max-width: 700px;
+            margin-bottom: 2rem;
+        }
+
+        .hero-stats {
+            display: flex;
+            gap: 2rem;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-bottom: 2.5rem;
+        }
+
+        .stat {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 800;
+            color: var(--accent);
+        }
+
+        .stat-label {
+            font-size: 0.8rem;
+            color: var(--text2);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+
+        .cta-group {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.8rem 1.8rem;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: var(--bg);
+        }
+
+        .btn-primary:hover {
+            background: #7dd3fc;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(56, 189, 248, 0.3);
+        }
+
+        .btn-secondary {
+            border: 1px solid var(--border);
+            color: var(--text);
+            background: var(--bg2);
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--accent);
+            background: var(--bg3);
+        }
+
+        /* Sections */
+        section {
+            padding: 5rem 2rem;
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        h2 {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: var(--text);
+        }
+
+        h2 span {
+            color: var(--accent);
+        }
+
+        .section-sub {
+            color: var(--text2);
+            font-size: 1.1rem;
+            margin-bottom: 3rem;
+            max-width: 650px;
+        }
+
+        /* Architecture diagram */
+        .arch-box {
+            background: var(--bg2);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 2rem;
+            font-family: 'Cascadia Code', 'Fira Code', monospace;
+            font-size: 0.82rem;
+            line-height: 1.6;
+            overflow-x: auto;
+            white-space: pre;
+            color: var(--text2);
+            margin-bottom: 2rem;
+        }
+
+        .arch-box .hl { color: var(--accent); }
+        .arch-box .hl2 { color: var(--green); }
+        .arch-box .hl3 { color: var(--orange); }
+        .arch-box .hl4 { color: var(--pink); }
+
+        /* Feature grid */
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .feature-card {
+            background: var(--bg2);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.8rem;
+            transition: all 0.2s;
+        }
+
+        .feature-card:hover {
+            border-color: var(--accent);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 30px rgba(0,0,0,0.3);
+        }
+
+        .feature-icon {
+            font-size: 2rem;
+            margin-bottom: 0.8rem;
+        }
+
+        .feature-card h3 {
+            font-size: 1.15rem;
+            margin-bottom: 0.5rem;
+            color: var(--text);
+        }
+
+        .feature-card p {
+            color: var(--text2);
+            font-size: 0.9rem;
+        }
+
+        /* Pipeline section */
+        .pipeline {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0;
+            align-items: stretch;
+            margin-bottom: 2rem;
+        }
+
+        .pipe-step {
+            flex: 1;
+            min-width: 150px;
+            padding: 1.2rem;
+            background: var(--bg2);
+            border: 1px solid var(--border);
+            text-align: center;
+            position: relative;
+        }
+
+        .pipe-step:first-child { border-radius: 12px 0 0 12px; }
+        .pipe-step:last-child { border-radius: 0 12px 12px 0; }
+
+        .pipe-step h4 {
+            color: var(--accent);
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 0.3rem;
+        }
+
+        .pipe-step p {
+            color: var(--text2);
+            font-size: 0.8rem;
+        }
+
+        .pipe-arrow {
+            display: flex;
+            align-items: center;
+            color: var(--accent);
+            font-size: 1.5rem;
+            padding: 0 0.3rem;
+        }
+
+        /* Behavior table */
+        .behavior-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+
+        .behavior-table th,
+        .behavior-table td {
+            padding: 0.8rem 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .behavior-table th {
+            color: var(--accent);
+            font-weight: 600;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .behavior-table td {
+            color: var(--text2);
+            font-size: 0.9rem;
+        }
+
+        .behavior-table tr:hover td {
+            color: var(--text);
+        }
+
+        /* Code block */
+        .code-block {
+            background: var(--bg2);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.5rem 2rem;
+            font-family: 'Cascadia Code', 'Fira Code', monospace;
+            font-size: 0.85rem;
+            overflow-x: auto;
+            margin: 1.5rem 0;
+            line-height: 1.8;
+        }
+
+        .code-block .comment { color: #6b7280; }
+        .code-block .cmd { color: var(--green); }
+
+        /* Contribute */
+        .contribute-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .contrib-item {
+            background: var(--bg3);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1.2rem;
+        }
+
+        .contrib-item h4 {
+            color: var(--accent);
+            margin-bottom: 0.3rem;
+            font-size: 0.95rem;
+        }
+
+        .contrib-item p {
+            color: var(--text2);
+            font-size: 0.85rem;
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 3rem 2rem;
+            border-top: 1px solid var(--border);
+            color: var(--text2);
+            font-size: 0.85rem;
+        }
+
+        footer a {
+            color: var(--accent);
+            text-decoration: none;
+        }
+
+        footer a:hover {
+            text-decoration: underline;
+        }
+
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hero-stats { gap: 1.2rem; }
+            .stat-value { font-size: 1.5rem; }
+            .pipe-arrow { display: none; }
+            .pipe-step { border-radius: 8px !important; }
+            .pipeline { flex-direction: column; gap: 0.5rem; }
+            section { padding: 3rem 1.2rem; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ==================== HERO ==================== -->
+<div class="hero">
+    <span class="hero-badge">Open Source Research Project</span>
+    <h1>Embodied Drosophila</h1>
+    <p>The first whole-brain connectome-driven simulation of a fruit fly in a physics-based biomechanical body. 138,639 spiking neurons. Compound-eye vision. Olfaction. Gustation. Flight. All from the real connectome.</p>
+
+    <div class="hero-stats">
+        <div class="stat">
+            <div class="stat-value">138,639</div>
+            <div class="stat-label">LIF Neurons</div>
+        </div>
+        <div class="stat">
+            <div class="stat-value">5M+</div>
+            <div class="stat-label">Synapses</div>
+        </div>
+        <div class="stat">
+            <div class="stat-value">6</div>
+            <div class="stat-label">Sensory Systems</div>
+        </div>
+        <div class="stat">
+            <div class="stat-value">0.1ms</div>
+            <div class="stat-label">Timestep</div>
+        </div>
+    </div>
+
+    <div class="cta-group">
+        <a href="https://github.com/eonsystemspbc/fly-brain" class="btn btn-primary">
+            View on GitHub
+        </a>
+        <a href="#quickstart" class="btn btn-secondary">
+            Quick Start
+        </a>
+    </div>
+</div>
+
+<!-- ==================== WHAT ==================== -->
+<section>
+    <h2>What is <span>Embodied Drosophila</span>?</h2>
+    <p class="section-sub">A complete virtual fruit fly where every behavior emerges from the connectome — no hardcoded rules, no if-else chains for actions.</p>
+
+    <div class="features">
+        <div class="feature-card">
+            <div class="feature-icon">&#x1F9E0;</div>
+            <h3>Whole-Brain Simulation</h3>
+            <p>138,639 Leaky Integrate-and-Fire neurons running on GPU (PyTorch) at 0.1ms resolution. Connectivity from FlyWire v783 — the most complete Drosophila connectome.</p>
+        </div>
+        <div class="feature-card">
+            <div class="feature-icon">&#x1F41E;</div>
+            <h3>Biomechanical Body</h3>
+            <p>NeuroMechFly v2 with 6 articulated legs, contact sensors, adhesion pads, and compound eyes. Physics simulated by MuJoCo at 10kHz.</p>
+        </div>
+        <div class="feature-card">
+            <div class="feature-icon">&#x1F441;</div>
+            <h3>Compound-Eye Vision</h3>
+            <p>750 ommatidia per eye with a full motion detection cascade (T1-T5 neurons). Looming detection via LC4 triggers escape through the Giant Fiber.</p>
+        </div>
+        <div class="feature-card">
+            <div class="feature-icon">&#x1F443;</div>
+            <h3>Olfaction &amp; Chemotaxis</h3>
+            <p>~2,600 olfactory receptor neurons with bilateral gradient sensing. The fly navigates toward food and away from danger using real antenna geometry.</p>
+        </div>
+        <div class="feature-card">
+            <div class="feature-icon">&#x1F445;</div>
+            <h3>Gustation &amp; Feeding</h3>
+            <p>Tarsal taste detection through leg contact. Sugar triggers proboscis extension; bitter compounds trigger avoidance. Proboscis extends via a dynamic hinge joint.</p>
+        </div>
+        <div class="feature-card">
+            <div class="feature-icon">&#x2708;&#xFE0F;</div>
+            <h3>Virtual Flight</h3>
+            <p>Giant Fiber activation triggers takeoff. The fly lifts off, hovers, steers via descending neurons, and lands with a controlled descent. 3D forces applied to the thorax.</p>
+        </div>
+    </div>
+</section>
+
+<!-- ==================== ARCHITECTURE ==================== -->
+<section>
+    <h2>System <span>Architecture</span></h2>
+    <p class="section-sub">Brain and body run at different timescales and communicate through descending neurons, just like the real fly.</p>
+
+    <div class="arch-box"><span class="hl">BRAIN</span> (GPU / PyTorch)                          <span class="hl2">BODY</span> (MuJoCo / flygym)
+&#9484;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9488;      &#9484;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9488;
+&#9474; 138,639 LIF neurons              &#9474;      &#9474; NeuroMechFly v2             &#9474;
+&#9474; 5M+ synapses (sparse GPU)        &#9474;      &#9474; 6 legs x 3 joints           &#9474;
+&#9474;                                   &#9474;      &#9474; compound eyes (2 x 750)     &#9474;
+&#9474; <span class="hl3">Visual</span>: T1&#9472;T2&#9472;T3&#9472;T4/T5&#9472;LC4&#9472;GF  &#9474;      &#9474; contact sensors             &#9474;
+&#9474; <span class="hl3">Olfactory</span>: ORN&#9472;PN&#9472;KC&#9472;MBON     &#9474; DN  &#9474; adhesion pads               &#9474;
+&#9474; <span class="hl3">Gustatory</span>: GRN&#9472;SEZ&#9472;MN         &#9474;&#9472;&#9472;&#9472;&#9658;&#9474; proboscis (hinge joint)     &#9474;
+&#9474; <span class="hl3">Somatosensory</span>: mechano&#9472;IN&#9472;MN  &#9474;      &#9474; looming arena               &#9474;
+&#9474; <span class="hl4">Flight</span>: GF &#9472;&#9658; xfrc_applied    &#9474;      &#9474; taste/odor zones            &#9474;
+&#9492;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9496;      &#9492;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9496;</div>
+</section>
+
+<!-- ==================== BEHAVIORS ==================== -->
+<section>
+    <h2>Emergent <span>Behaviors</span></h2>
+    <p class="section-sub">All behaviors arise from connectome-driven neural activity. The brain-body bridge translates descending neuron firing rates into locomotion modes.</p>
+
+    <table class="behavior-table">
+        <thead>
+            <tr>
+                <th>Behavior</th>
+                <th>Neural Pathway</th>
+                <th>Trigger</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><strong>Walking</strong></td>
+                <td>DN rates &rarr; CPG modulation</td>
+                <td>Default locomotion (tripod/tetrapod gait)</td>
+            </tr>
+            <tr>
+                <td><strong>Escape Flight</strong></td>
+                <td>LC4 &rarr; Giant Fiber &rarr; DNs &rarr; xfrc_applied</td>
+                <td>Looming object (expanding retinal image)</td>
+            </tr>
+            <tr>
+                <td><strong>Chemotaxis</strong></td>
+                <td>ORN &rarr; PN &rarr; KC &rarr; MBON &rarr; DN turn</td>
+                <td>Odor gradient (bilateral antenna comparison)</td>
+            </tr>
+            <tr>
+                <td><strong>Feeding</strong></td>
+                <td>GRN &rarr; SEZ &rarr; MN9 &rarr; proboscis extension</td>
+                <td>Tarsal contact with sugar zone</td>
+            </tr>
+            <tr>
+                <td><strong>Aversion</strong></td>
+                <td>Bitter GRN &rarr; SEZ &rarr; avoidance motor</td>
+                <td>Tarsal contact with bitter zone</td>
+            </tr>
+            <tr>
+                <td><strong>Grooming</strong></td>
+                <td>AMMC &rarr; antennal MN &rarr; leg sweep</td>
+                <td>Antennal mechanosensory activation</td>
+            </tr>
+            <tr>
+                <td><strong>Courtship Song</strong></td>
+                <td>P1 &rarr; pIP10 &rarr; vPR &rarr; wing MN</td>
+                <td>P1 neuron activation (male &rarr; female signal)</td>
+            </tr>
+            <tr>
+                <td><strong>Tactile Escape</strong></td>
+                <td>Mechanoreceptor &rarr; ascending IN &rarr; DN</td>
+                <td>Sudden high contact force (&gt;35 N)</td>
+            </tr>
+        </tbody>
+    </table>
+</section>
+
+<!-- ==================== VISION PIPELINE ==================== -->
+<section>
+    <h2>Visual <span>Processing Pipeline</span></h2>
+    <p class="section-sub">The compound eye vision system implements the biological motion detection cascade found in the Drosophila optic lobe.</p>
+
+    <div class="pipeline">
+        <div class="pipe-step">
+            <h4>Retina</h4>
+            <p>750 ommatidia<br>per eye</p>
+        </div>
+        <div class="pipe-arrow">&rarr;</div>
+        <div class="pipe-step">
+            <h4>T1 (Lamina)</h4>
+            <p>Luminance &rarr;<br>contrast</p>
+        </div>
+        <div class="pipe-arrow">&rarr;</div>
+        <div class="pipe-step">
+            <h4>T2 (Medulla)</h4>
+            <p>Temporal<br>derivative</p>
+        </div>
+        <div class="pipe-arrow">&rarr;</div>
+        <div class="pipe-step">
+            <h4>T4/T5</h4>
+            <p>Directional<br>motion energy</p>
+        </div>
+        <div class="pipe-arrow">&rarr;</div>
+        <div class="pipe-step">
+            <h4>LC4 &rarr; GF</h4>
+            <p>Looming &rarr;<br>escape</p>
+        </div>
+    </div>
+</section>
+
+<!-- ==================== QUICK START ==================== -->
+<section id="quickstart">
+    <h2><span>Quick</span> Start</h2>
+    <p class="section-sub">Get the simulation running in under 5 minutes.</p>
+
+    <div class="code-block">
+<span class="comment"># Clone the repository</span>
+<span class="cmd">git clone https://github.com/eonsystemspbc/fly-brain.git</span>
+<span class="cmd">cd fly-brain</span>
+
+<span class="comment"># Create conda environment</span>
+<span class="cmd">conda env create -f environment.yml</span>
+<span class="cmd">conda activate brain-fly</span>
+<span class="cmd">pip install flygym mujoco</span>
+
+<span class="comment"># Run the embodied simulation with visuals and brain monitor</span>
+<span class="cmd">python fly_embodied.py --visual --monitor</span>
+
+<span class="comment"># Enable virtual flight</span>
+<span class="cmd">python fly_embodied.py --visual --monitor --flight</span>
+
+<span class="comment"># Add olfactory and gustatory stimuli</span>
+<span class="cmd">python fly_embodied.py --visual --monitor --flight --sugar 10,0 --odor attractive,15,5</span>
+    </div>
+</section>
+
+<!-- ==================== BENCHMARK ==================== -->
+<section>
+    <h2>Neural Simulation <span>Benchmarks</span></h2>
+    <p class="section-sub">The project includes benchmarks comparing four GPU/CPU frameworks for simulating the same 138K-neuron network.</p>
+
+    <table class="behavior-table">
+        <thead>
+            <tr>
+                <th>Framework</th>
+                <th>Backend</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><strong>Brian2</strong></td>
+                <td>C++ standalone (multi-core CPU)</td>
+                <td>Ready</td>
+            </tr>
+            <tr>
+                <td><strong>Brian2CUDA</strong></td>
+                <td>CUDA standalone (GPU)</td>
+                <td>Ready</td>
+            </tr>
+            <tr>
+                <td><strong>PyTorch</strong></td>
+                <td>Sparse CUDA (GPU)</td>
+                <td>Ready &mdash; used in embodied simulation</td>
+            </tr>
+            <tr>
+                <td><strong>NEST GPU</strong></td>
+                <td>Custom CUDA kernel (user_m1)</td>
+                <td>Ready</td>
+            </tr>
+        </tbody>
+    </table>
+</section>
+
+<!-- ==================== CONTRIBUTE ==================== -->
+<section>
+    <h2>Contribute to <span>Embodied Drosophila</span></h2>
+    <p class="section-sub">This is an open research project. Whether you're a neuroscientist, roboticist, ML engineer, or student — you're welcome to contribute.</p>
+
+    <div class="contribute-grid">
+        <div class="contrib-item">
+            <h4>New Sensory Modalities</h4>
+            <p>Auditory (Johnston's organ), hygrosensation, thermosensation, gravity sensing</p>
+        </div>
+        <div class="contrib-item">
+            <h4>Circuit Analysis</h4>
+            <p>Identify and validate specific neural circuits in the FlyWire connectome</p>
+        </div>
+        <div class="contrib-item">
+            <h4>Behavioral Validation</h4>
+            <p>Compare simulated behaviors against real Drosophila experimental data</p>
+        </div>
+        <div class="contrib-item">
+            <h4>Performance &amp; Scale</h4>
+            <p>GPU optimization, multi-GPU support, neuromorphic hardware ports (Loihi, SpiNNaker)</p>
+        </div>
+        <div class="contrib-item">
+            <h4>Learning &amp; Memory</h4>
+            <p>Implement mushroom body plasticity, associative learning, habituation</p>
+        </div>
+        <div class="contrib-item">
+            <h4>Visualization</h4>
+            <p>Better real-time monitors, VR integration, data dashboards, 3D neural activity maps</p>
+        </div>
+    </div>
+
+    <div style="text-align: center; margin-top: 2.5rem;">
+        <a href="https://github.com/eonsystemspbc/fly-brain/issues" class="btn btn-primary">
+            Open an Issue
+        </a>
+        <a href="https://github.com/eonsystemspbc/fly-brain/pulls" class="btn btn-secondary">
+            Submit a PR
+        </a>
+    </div>
+</section>
+
+<!-- ==================== PAPERS ==================== -->
+<section>
+    <h2>Technical <span>Papers</span></h2>
+    <p class="section-sub">Detailed documentation of the complete system, from neural model to biomechanics.</p>
+
+    <div class="features" style="grid-template-columns: 1fr 1fr;">
+        <div class="feature-card">
+            <h3>English Paper</h3>
+            <p>Full technical paper covering architecture, sensory systems, virtual flight, and emergent behaviors.</p>
+            <br>
+            <a href="https://github.com/eonsystemspbc/fly-brain/blob/main/paper_embodied_drosophila.md" style="color: var(--accent);">Read on GitHub &rarr;</a>
+        </div>
+        <div class="feature-card">
+            <h3>Paper en Espa&ntilde;ol</h3>
+            <p>Art&iacute;culo t&eacute;cnico completo que cubre la arquitectura, sistemas sensoriales, vuelo virtual y comportamientos emergentes.</p>
+            <br>
+            <a href="https://github.com/eonsystemspbc/fly-brain/blob/main/paper_embodied_drosophila_es.md" style="color: var(--accent);">Leer en GitHub &rarr;</a>
+        </div>
+    </div>
+</section>
+
+<!-- ==================== FOOTER ==================== -->
+<footer>
+    <div class="footer-links">
+        <a href="https://github.com/eonsystemspbc/fly-brain">GitHub</a>
+        <a href="https://github.com/eonsystemspbc/fly-brain/issues">Issues</a>
+        <a href="https://github.com/eonsystemspbc/fly-brain/blob/main/LICENSE">MIT License</a>
+        <a href="https://flywire.ai/">FlyWire</a>
+        <a href="https://neuromechfly.org/">NeuroMechFly</a>
+    </div>
+    <p>Embodied Drosophila &mdash; EON Systems PBC &mdash; 2026</p>
+    <p style="margin-top: 0.5rem; font-size: 0.75rem; color: #475569;">
+        Drosophila brain simulation &bull; Connectome-driven embodied neuroscience &bull; FlyWire v783 &bull; NeuroMechFly v2 &bull; MuJoCo
+    </p>
+</footer>
+
+</body>
+</html>
