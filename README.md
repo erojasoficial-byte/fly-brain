@@ -9,11 +9,9 @@
 > **A complete virtual fruit fly**: 138,639 LIF neurons running on GPU (PyTorch) connected to a biomechanical body (NeuroMechFly v2 / MuJoCo) with compound-eye vision, olfaction, gustation, somatosensation, courtship song, and virtual flight — all driven by the real connectome.
 
 <div align="center">
-
-https://github.com/erojasoficial-byte/fly-brain/raw/main/demo.mp4
-
-*Real-time embodied simulation: the fly sees, walks, and escapes — all driven by 138,639 spiking neurons from the FlyWire connectome.*
-
+  <video src="https://github.com/erojasoficial-byte/fly-brain/raw/main/demo.mp4" width="720" controls autoplay muted loop></video>
+  <br>
+  <em>Real-time embodied simulation: the fly sees, walks, and escapes — all driven by 138,639 spiking neurons from the FlyWire connectome.</em>
 </div>
 
 ---
