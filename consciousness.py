@@ -477,11 +477,17 @@ class ConsciousnessTimeline:
             f'{broadcast:.4f}', f'{self_score:.4f}', f'{complexity:.4f}',
             mode,
         ])
-        self._tl_file.flush()
+        try:
+            self._tl_file.flush()
+        except (PermissionError, OSError):
+            pass  # Windows antivirus can block flush
 
         # Phi timeseries
         self._phi_writer.writerow([step, f'{phi:.4f}'])
-        self._phi_file.flush()
+        try:
+            self._phi_file.flush()
+        except (PermissionError, OSError):
+            pass
 
         # Mode stats
         if mode not in self.mode_stats:
@@ -643,18 +649,23 @@ class ConsciousnessDetector:
     initializes all sub-modules, provides update/query interface.
     """
 
-    def __init__(self, brain):
+    def __init__(self, brain, label='', sim_timestep=1e-3):
         """
         Args:
             brain: BrainEngine instance with .model.weights, .flyid2i,
                    .num_neurons, .state, .device
+            label: optional suffix for session directory (e.g. 'fly0')
+            sim_timestep: body simulation timestep in seconds (for time calc)
         """
         self.brain = brain
         self.device = brain.device
         self.num_neurons = brain.num_neurons
         self.brain_step = 0
+        self.sim_timestep = sim_timestep
+        self._label = label
 
-        print("[Consciousness] Initializing consciousness detection...")
+        tag = f" ({label})" if label else ""
+        print(f"[Consciousness{tag}] Initializing consciousness detection...")
 
         # Load neuron partitions from annotations
         self.partitions = self._build_partitions(brain)
@@ -682,6 +693,8 @@ class ConsciousnessDetector:
 
         # Session directory
         session_name = datetime.now().strftime('session_%Y%m%d_%H%M%S')
+        if label:
+            session_name += f'_{label}'
         base_dir = Path(__file__).resolve().parent / 'consciousness_history'
         self.timeline = ConsciousnessTimeline(base_dir / session_name)
 
@@ -692,7 +705,7 @@ class ConsciousnessDetector:
         self.self_val = 0.0
         self.cmplx_val = 0.0
 
-        print("[Consciousness] Ready. Composite weights: "
+        print(f"[Consciousness{tag}] Ready. Composite weights: "
               f"Phi={W_PHI} GW={W_BROADCAST} Self={W_SELF} "
               f"Cmplx={W_COMPLEXITY}")
 
@@ -907,7 +920,7 @@ class ConsciousnessDetector:
 
         # Composite CI (record every CI_RECORD_INTERVAL)
         if step % CI_RECORD_INTERVAL == 0:
-            t_sim = body_step * 0.001  # body_step × sim.timestep (≈1ms)
+            t_sim = body_step * self.sim_timestep
             self.ci = self.timeline.record(
                 step, t_sim,
                 self.phi_val, self.gw_val, self.self_val, self.cmplx_val,

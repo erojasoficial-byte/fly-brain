@@ -2,7 +2,7 @@
 """
 Embodied Drosophila: Brain-body closed loop with interactive 3D viewer.
 
-Connects the fly-brain connectome simulation (Eon Systems, LIF neurons on GPU)
+Connects the fly-brain connectome simulation (LIF neurons on GPU)
 to a NeuroMechFly v2 biomechanical body (flygym + MuJoCo). Behaviors emerge
 from spike propagation through the real connectome — no hand-coded rules.
 
@@ -1017,6 +1017,8 @@ def main():
     finally:
         if consciousness is not None:
             consciousness.save_session()
+        if brain is not None:
+            brain.save_plastic_weights()
         if monitor is not None:
             monitor.stop()
         if viewer is not None:

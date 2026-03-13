@@ -1,0 +1,51 @@
+======================================================================
+CONSCIOUSNESS PROXY MEASUREMENT REPORT
+Embodied Drosophila — Fly-Brain Simulation
+Session: session_20260311_230853_fly0
+Generated: 2026-03-11 23:12:52
+======================================================================
+
+SUMMARY STATISTICS
+----------------------------------------
+  CI          : mean=0.2024  std=0.0887  min=0.0000  max=0.3070
+  Phi         : mean=0.0058  std=0.0050  min=0.0000  max=0.0200
+  Broadcast   : mean=0.5112  std=0.1698  min=0.0000  max=0.6024
+  Self-Model  : mean=0.0012  std=0.0115  min=0.0000  max=0.1111
+  Complexity  : mean=0.2356  std=0.2487  min=0.0000  max=0.4994
+
+EXPERIMENT A: CI BY BEHAVIORAL MODE
+----------------------------------------
+  walking     : mean=0.2024  std=0.0887  n=93
+
+EXPERIMENT B: PHI DURING MODE TRANSITIONS
+----------------------------------------
+  No mode transitions detected.
+
+EXPERIMENT C: CI HABITUATION OVER TIME
+----------------------------------------
+  First third:  mean_CI=0.0992
+  Last third:   mean_CI=0.2837
+  Delta:        +0.1845 (sensitization)
+
+EXPERIMENT D: CI vs ESCAPE MODE
+----------------------------------------
+  Non-escape CI: mean=0.2024  n=93
+
+PEAK EVENTS (top 10)
+----------------------------------------
+  step=     355  CI=0.3070
+  step=     275  CI=0.2862
+  step=     340  CI=0.2854
+  step=     365  CI=0.2843
+  step=     425  CI=0.2842
+  step=     250  CI=0.2838
+  step=     455  CI=0.2833
+  step=     410  CI=0.2831
+  step=     385  CI=0.2829
+  step=     400  CI=0.2829
+
+======================================================================
+Note: These are proxy measurements of neural integration
+and complexity. They do not constitute evidence of
+subjective experience or phenomenal consciousness.
+======================================================================

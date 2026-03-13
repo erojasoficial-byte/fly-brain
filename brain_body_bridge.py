@@ -1,5 +1,5 @@
 """
-Brain-Body Bridge: Connects fly-brain connectome simulation (Eon Systems)
+Brain-Body Bridge: Connects fly-brain connectome simulation
 to NeuroMechFly v2 (flygym) biomechanical body via descending neuron decoding.
 
 Architecture:
@@ -20,6 +20,15 @@ if str(_CODE_DIR) not in sys.path:
     sys.path.insert(0, str(_CODE_DIR))
 
 from run_pytorch import TorchModel, MODEL_PARAMS, DT, get_weights, get_hash_tables
+
+# ============================================================================
+# Hebbian Plasticity Constants — inherent neural tissue property
+# ============================================================================
+
+HEBB_BATCH   = 10     # accumulate spikes for 10 brain steps before update
+HEBB_ETA     = 1e-4   # learning rate
+HEBB_ALPHA   = 1e-7   # weight decay rate (multiplicative)
+PLASTIC_PATH = Path(__file__).resolve().parent / 'data' / 'plastic_weights.pt'
 
 # ============================================================================
 # Descending Neuron (DN) Definitions — FlyWire IDs from example.ipynb
@@ -269,9 +278,10 @@ STIMULI = {
 class BrainEngine:
     """Wraps fly-brain TorchModel for step-by-step execution on GPU."""
 
-    def __init__(self, device='cuda'):
+    def __init__(self, device='cuda', plastic_path=None):
         self.device = device if torch.cuda.is_available() else 'cpu'
         self.dt = DT  # 0.1 ms
+        self._plastic_path = Path(plastic_path) if plastic_path else PLASTIC_PATH
 
         data_dir = Path(__file__).resolve().parent / 'data'
         comp_path = data_dir / '2025_Completeness_783.csv'
@@ -318,6 +328,81 @@ class BrainEngine:
               f"{len(self.dn_indices)}/{len(DN_NEURONS)}")
         for s, idx in self.stim_indices.items():
             print(f"  '{s}': {len(idx)}/{len(STIMULI[s]['neurons'])} neurons")
+
+        # Hebbian plasticity — inherent property of neural tissue
+        self._init_plasticity()
+
+    # ── Hebbian Plasticity ──────────────────────────────────────────────
+
+    def _init_plasticity(self):
+        """Initialize Hebbian plasticity as inherent neural tissue property.
+
+        Every synapse changes continuously from the first brain step.
+        Co-active synapses strengthen; non-co-active synapses decay.
+        """
+        w = self.model.weights
+        self._row_ptr = w.crow_indices()
+        self._col_idx = w.col_indices()
+        self._syn_vals = w.values()  # mutable view into weight matrix
+
+        # Preserve excitatory/inhibitory identity
+        self._sign_mask = torch.sign(self._syn_vals)
+
+        # Original magnitudes for clamping (max 3× growth)
+        self._abs_orig = self._syn_vals.abs().clone()
+
+        # Expand row_ptr to per-synapse post-synaptic indices
+        row_lengths = self._row_ptr[1:] - self._row_ptr[:-1]
+        self._post_idx = torch.repeat_interleave(
+            torch.arange(self.num_neurons, device=self.device), row_lengths
+        )
+
+        # Spike accumulator and step counter
+        self._spike_acc = torch.zeros(self.num_neurons, device=self.device)
+        self._hebb_count = 0
+
+        # Load persisted weights if available
+        if self._plastic_path.exists():
+            saved = torch.load(self._plastic_path, map_location=self.device,
+                               weights_only=True)
+            if saved.shape == self._syn_vals.shape:
+                self._syn_vals.copy_(saved)
+                self._sign_mask = torch.sign(self._syn_vals)
+                print(f"[BrainEngine] Loaded plastic weights from {self._plastic_path}")
+            else:
+                print(f"[BrainEngine] Plastic weights shape mismatch, starting fresh")
+
+        # Precompute per-synapse clamp bounds (based on original magnitudes)
+        max_mag = 3.0 * self._abs_orig
+        self._clamp_min = torch.where(
+            self._sign_mask < 0, -max_mag, torch.zeros_like(max_mag))
+        self._clamp_max = torch.where(
+            self._sign_mask > 0, max_mag, torch.zeros_like(max_mag))
+
+        print(f"[BrainEngine] Hebbian plasticity active: "
+              f"{len(self._syn_vals)} synapses")
+
+    def _hebb_update(self):
+        """Hebbian update: co-active synapses strengthen, all decay."""
+        avg = self._spike_acc / HEBB_BATCH
+        self._spike_acc.zero_()
+
+        pre = avg[self._col_idx]
+        post = avg[self._post_idx]
+
+        # Hebbian potentiation + weight decay
+        dW = HEBB_ETA * pre * post * self._sign_mask - HEBB_ALPHA * self._syn_vals
+        self._syn_vals.add_(dW)
+
+        # Sign-preserving clamp: cap magnitude at 3× original
+        self._syn_vals.clamp_(min=self._clamp_min, max=self._clamp_max)
+
+    def save_plastic_weights(self):
+        """Persist current synaptic weights to disk."""
+        torch.save(self._syn_vals.detach().cpu(), self._plastic_path)
+        print(f"[BrainEngine] Saved plastic weights to {self._plastic_path}")
+
+    # ────────────────────────────────────────────────────────────────────
 
     def set_stimulus(self, stim_name):
         """Set input firing rates for a named stimulus. None clears all."""
@@ -367,7 +452,14 @@ class BrainEngine:
         """Advance brain by one timestep (0.1 ms). Returns spike tensor."""
         cond, dbuf, spk, v, ref = self.state
         self.state = self.model(self.rates, cond, dbuf, spk, v, ref)
-        return self.state[2]  # spikes shape (1, num_neurons)
+        # Hebbian plasticity — inherent tissue property
+        spikes = self.state[2]
+        self._spike_acc += spikes.squeeze(0)
+        self._hebb_count += 1
+        if self._hebb_count >= HEBB_BATCH:
+            self._hebb_update()
+            self._hebb_count = 0
+        return spikes  # shape (1, num_neurons)
 
     def get_dn_spikes(self):
         """Return dict of current DN spike values {name: 0.0 or 1.0}."""

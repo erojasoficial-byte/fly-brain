@@ -1,0 +1,55 @@
+======================================================================
+CONSCIOUSNESS PROXY MEASUREMENT REPORT
+Embodied Drosophila — Fly-Brain Simulation
+Session: session_20260311_233746_fly1
+Generated: 2026-03-12 06:38:02
+======================================================================
+
+SUMMARY STATISTICS
+----------------------------------------
+  CI          : mean=0.2165  std=0.0575  min=0.0000  max=0.4802
+  Phi         : mean=0.0025  std=0.0041  min=0.0000  max=0.0398
+  Broadcast   : mean=0.5591  std=0.0752  min=0.0000  max=0.6009
+  Self-Model  : mean=0.0018  std=0.0324  min=0.0000  max=1.0000
+  Complexity  : mean=0.2386  std=0.2486  min=0.0000  max=0.4995
+
+EXPERIMENT A: CI BY BEHAVIORAL MODE
+----------------------------------------
+  escape      : mean=0.2186  std=0.0573  n=973
+  grooming    : mean=0.2161  std=0.0531  n=776
+  walking     : mean=0.2115  std=0.0668  n=337
+
+EXPERIMENT B: PHI DURING MODE TRANSITIONS
+----------------------------------------
+  During transitions:     mean_phi=0.0035  n=37
+  During stable behavior: mean_phi=0.0024  n=2049
+
+EXPERIMENT C: CI HABITUATION OVER TIME
+----------------------------------------
+  First third:  mean_CI=0.2222
+  Last third:   mean_CI=0.2203
+  Delta:        -0.0019 (habituation)
+
+EXPERIMENT D: CI vs ESCAPE MODE
+----------------------------------------
+  Escape CI:     mean=0.2186  n=973
+  Non-escape CI: mean=0.2147  n=1113
+
+PEAK EVENTS (top 10)
+----------------------------------------
+  step=    1375  CI=0.4802
+  step=    7510  CI=0.3817
+  step=    2060  CI=0.3068
+  step=   10190  CI=0.3064
+  step=    5410  CI=0.3040
+  step=     910  CI=0.3027
+  step=    7865  CI=0.3026
+  step=    1170  CI=0.2914
+  step=    1155  CI=0.2914
+  step=    7905  CI=0.2855
+
+======================================================================
+Note: These are proxy measurements of neural integration
+and complexity. They do not constitute evidence of
+subjective experience or phenomenal consciousness.
+======================================================================

@@ -18,9 +18,6 @@ data/archive/
 # Backups
 backup_*.zip
 
-# Generated PDFs (rebuild with: python md_to_pdf.py)
-*.pdf
-
 # OS / IDE
 .DS_Store
 Thumbs.db
