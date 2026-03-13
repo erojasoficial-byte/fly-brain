@@ -217,7 +217,7 @@ def print_summary_table(all_results, backend_name, logger):
 
     for result in all_results:
         t = result.get('timings', {})
-        status_icon = "\u2713" if result['status'] == 'success' else "\u2717"
+        status_icon = "OK" if result['status'] == 'success' else "FAIL"
 
         setup_time = t.get(
             'network_creation_total', t.get('model_setup_total', 0)

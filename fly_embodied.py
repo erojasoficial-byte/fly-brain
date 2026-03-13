@@ -429,6 +429,7 @@ def main():
 
     # ── Find proboscis joint (added dynamically to Rostrum) ──
     model_ptr = sim.physics.model.ptr
+    fly_name = fly.name
     for jname_candidate in [f"{fly_name}/joint_Proboscis", "joint_Proboscis"]:
         proboscis_jnt_id = mujoco.mj_name2id(
             model_ptr, mujoco.mjtObj.mjOBJ_JOINT, jname_candidate)
