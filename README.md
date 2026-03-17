@@ -7,7 +7,7 @@
 [![FlyWire Connectome](https://img.shields.io/badge/brain-FlyWire%20v783-purple.svg)](https://flywire.ai/)
 [![bioRxiv](https://img.shields.io/badge/preprint-bioRxiv-B31B1B.svg)](https://doi.org/10.1101/2026.XX.XX.XXXXXX)
 
-> **Enrique Manuel Rojas Aliaga** · Independent Researcher · Lima, Peru · erojasoficial@gmail.com
+> **Enrique Manuel Rojas Aliaga** · Facultad de Ingenieria y Arquitectura, Universidad de San Martin de Porres · Lima, Peru · enrique_rojas1@usmp.pe
 
 <div align="center">
   <img src="demo_preview.gif" alt="Embodied Drosophila simulation" width="640">
@@ -353,12 +353,12 @@ See Figures 2–9 in the paper for detailed visualizations.
 
 | Component | Minimum | Tested |
 |---|---|---|
-| **GPU** | NVIDIA with CUDA 12.x, 6 GB VRAM | RTX 4060 Laptop (8 GB) |
-| **RAM** | 32 GB | 64 GB DDR5 |
-| **CPU** | Intel i5 / AMD Ryzen 5 | Intel i7-13620H |
-| **OS** | Windows 10 / Ubuntu 20.04 | Windows 11 Pro |
+| **GPU** | NVIDIA with CUDA 12.x, 6 GB VRAM | RTX 5090 Laptop (24 GB) |
+| **RAM** | 32 GB | 64 GB DDR5 5600 MHz |
+| **CPU** | Intel i5 / AMD Ryzen 5 | Intel Core Ultra 9 285HX |
+| **OS** | Windows 10 / Ubuntu 20.04 | Windows 11 Home |
 | **Python** | 3.10+ | 3.10.16 |
-| **PyTorch** | 2.0+ (CUDA) | 2.5.1+cu121 |
+| **PyTorch** | 2.0+ (CUDA) | 2.5.1+cu128 |
 | **MuJoCo** | 3.0+ | 3.2.7 |
 
 ---
@@ -390,4 +390,4 @@ See Figures 2–9 in the paper for detailed visualizations.
 
 ---
 
-**Enrique Manuel Rojas Aliaga** · erojasoficial@gmail.com · Independent Researcher, Lima, Peru
+**Enrique Manuel Rojas Aliaga** · enrique_rojas1@usmp.pe · Facultad de Ingenieria y Arquitectura, Universidad de San Martin de Porres, Lima, Peru

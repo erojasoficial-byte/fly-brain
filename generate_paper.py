@@ -3,7 +3,7 @@
 Generate bioRxiv-quality scientific paper PDF with publication figures.
 Emergent Individuality in Whole-Brain Connectome Simulations of Drosophila.
 
-Author: Enrique Manuel Rojas Aliaga
+Author: Enrique Manuel Rojas Aliaga - Universidad de San Martin de Porres
 """
 
 import os
@@ -863,9 +863,9 @@ pdf.set_font('Helvetica', '', 10)
 pdf.cell(0, 6, 'Enrique Manuel Rojas Aliaga', align='C', new_x="LMARGIN", new_y="NEXT")
 pdf.ln(2)
 pdf.set_font('Helvetica', 'I', 8.5)
-pdf.cell(0, 5, 'Independent Researcher, Lima, Peru', align='C', new_x="LMARGIN", new_y="NEXT")
+pdf.cell(0, 5, 'Facultad de Ingenieria y Arquitectura, Universidad de San Martin de Porres, Lima, Peru', align='C', new_x="LMARGIN", new_y="NEXT")
 pdf.set_font('Helvetica', '', 8.5)
-pdf.cell(0, 5, 'erojasoficial@gmail.com', align='C', new_x="LMARGIN", new_y="NEXT")
+pdf.cell(0, 5, 'enrique_rojas1@usmp.pe', align='C', new_x="LMARGIN", new_y="NEXT")
 pdf.ln(3)
 
 pdf.set_font('Helvetica', 'I', 8)
@@ -1028,8 +1028,8 @@ pdf.body_text(
     "input determined by its own position, orientation, and movement history. Integration metrics "
     "and plastic weights are logged independently. The simulation runs at 5 kHz neural resolution "
     "with 0.2 ms physics timesteps. We conducted 8 paired sessions over 24 hours, accumulating "
-    ">100 seconds of simulated time per fly (~7 hours wall-clock per session on an Intel i7-13620H "
-    "CPU with NVIDIA RTX 4060 Laptop GPU, 8 GB VRAM, 64 GB RAM)."
+    ">100 seconds of simulated time per fly (~7 hours wall-clock per session on an Intel Core Ultra 9 285HX "
+    "CPU with NVIDIA RTX 5090 Laptop GPU, 24 GB VRAM, 64 GB DDR5 RAM)."
 )
 
 # ── RESULTS ──
@@ -1260,7 +1260,7 @@ pdf.body_text(
     "access terms. The NeuroMechFly v2 biomechanical model (Lobato-Rios et al., 2024) and the "
     "MuJoCo physics engine (DeepMind) provided the embodied simulation framework. This work "
     "was conducted independently and received no external funding. Computations were performed "
-    "on consumer hardware (Intel i7-13620H, NVIDIA RTX 4060 Laptop GPU, 64 GB RAM)."
+    "on consumer hardware (Intel Core Ultra 9 285HX, NVIDIA RTX 5090 Laptop GPU, 64 GB DDR5 RAM)."
 )
 
 # ── REFERENCES ──
@@ -1295,8 +1295,8 @@ pdf.section_title('Supplementary Information')
 pdf.subsection_title('S1. Hardware and Software')
 pdf.body_text(
     "All simulations were performed on a laptop computer with the following specifications: "
-    "Intel Core i7-13620H (13th Gen, 10 cores), 64 GB DDR5 RAM, NVIDIA GeForce RTX 4060 Laptop "
-    "GPU (8 GB GDDR6 VRAM). Software: Python 3.10, PyTorch 2.5.1 (CUDA 12.1), MuJoCo 3.2.7, "
+    "Intel Core Ultra 9 285HX (24 cores), 64 GB DDR5 5600 MHz RAM, NVIDIA GeForce RTX 5090 Laptop "
+    "GPU (24 GB GDDR7 VRAM). Software: Python 3.10, PyTorch 2.5.1 (CUDA 12.8), MuJoCo 3.2.7, "
     "flygym (NeuroMechFly v2). Operating system: Windows 11 Pro. Each paired simulation session "
     "runs for approximately 7 hours wall-clock time to produce ~100 seconds of simulated time "
     "at 5 kHz neural resolution."
