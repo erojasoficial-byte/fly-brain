@@ -5,7 +5,7 @@
 [![GPU Accelerated](https://img.shields.io/badge/GPU-CUDA%2012.x-76B900.svg)](https://developer.nvidia.com/cuda-toolkit)
 [![NeuroMechFly](https://img.shields.io/badge/body-NeuroMechFly%20v2-orange.svg)](https://neuromechfly.org/)
 [![FlyWire Connectome](https://img.shields.io/badge/brain-FlyWire%20v783-purple.svg)](https://flywire.ai/)
-[![bioRxiv](https://img.shields.io/badge/preprint-bioRxiv-B31B1B.svg)](https://doi.org/10.1101/2026.XX.XX.XXXXXX)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.19152238.svg)](https://doi.org/10.5281/zenodo.19152238)
 
 > **Enrique Manuel Rojas Aliaga** · Facultad de Ingenieria y Arquitectura, Universidad de San Martin de Porres · Lima, Peru · enrique_rojas1@usmp.pe
 
@@ -23,7 +23,7 @@
 
 This repository accompanies the preprint:
 
-> **Rojas Aliaga, E. M.** (2026). *Emergent Individuality and Neural Integration in Whole-Brain Connectome Simulations of Drosophila melanogaster.* bioRxiv. doi: [10.1101/2026.XX.XX.XXXXXX](https://doi.org/10.1101/2026.XX.XX.XXXXXX)
+> **Rojas Aliaga, E. M.** (2026). *Emergent Individuality and Neural Integration in Whole-Brain Connectome Simulations of Drosophila melanogaster.* Zenodo. doi: [10.5281/zenodo.19152238](https://doi.org/10.5281/zenodo.19152238)
 
 Pre-built PDFs are included in this repository:
 
@@ -371,9 +371,9 @@ See Figures 2–9 in the paper for detailed visualizations.
   title   = {Emergent Individuality and Neural Integration in Whole-Brain
              Connectome Simulations of {Drosophila melanogaster}},
   year    = {2026},
-  journal = {bioRxiv},
-  doi     = {10.1101/2026.XX.XX.XXXXXX},
-  url     = {https://github.com/erojasoficial-byte/fly-brain}
+  journal = {Zenodo},
+  doi     = {10.5281/zenodo.19152238},
+  url     = {https://doi.org/10.5281/zenodo.19152238}
 }
 ```
 
